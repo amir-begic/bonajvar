@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   svgContent: string;
@@ -8,6 +8,8 @@ interface Props {
 
 export default function AjvarIllustration({ svgContent }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showGyroBtn, setShowGyroBtn] = useState(false);
+  const registerGyroRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const container = containerRef.current;
@@ -34,8 +36,6 @@ export default function AjvarIllustration({ svgContent }: Props) {
     }
 
     // ── Mouse parallax + idle drift ─────────────────────────────────
-    // lastMouseMove = 0 means "never moved" → idle animation starts immediately.
-    // Moving the mouse resets it; after 2 s of no movement it drifts again.
     let lastMouseMove = 0;
     let targetX = 0, targetY = 0;
     let currentX = 0, currentY = 0;
@@ -58,12 +58,10 @@ export default function AjvarIllustration({ svgContent }: Props) {
       const isIdle = Date.now() - lastMouseMove > 800;
 
       if (isIdle) {
-        // Slow figure-8 drift when no mouse input (always active on mobile)
         targetX = Math.sin(t * 0.35) * 2.0;
         targetY = Math.cos(t * 0.25) * 1.5;
       }
 
-      // Slower lerp during idle → dreamier feel
       const speed = isIdle ? 0.022 : 0.07;
       currentX = lerp(currentX, targetX, speed);
       currentY = lerp(currentY, targetY, speed);
@@ -79,7 +77,6 @@ export default function AjvarIllustration({ svgContent }: Props) {
     };
 
     // ── Gyroscope parallax (mobile) ─────────────────────────────────
-    // beta/gamma → targetX/Y, suppressing idle drift while active.
     // betaRef calibrates the neutral hold angle on first reading.
     let betaRef: number | null = null;
 
@@ -95,20 +92,17 @@ export default function AjvarIllustration({ svgContent }: Props) {
       window.addEventListener("deviceorientation", onOrientation);
     };
 
+    // Expose registerGyro so the button click handler (outside useEffect) can call it
+    registerGyroRef.current = registerGyro;
+
     if (
       typeof DeviceOrientationEvent !== "undefined" &&
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       typeof (DeviceOrientationEvent as any).requestPermission === "function"
     ) {
-      // iOS 13+ — request inside a user gesture (first touch)
-      const onFirstTouch = () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (DeviceOrientationEvent as any)
-          .requestPermission()
-          .then((state: string) => { if (state === "granted") registerGyro(); })
-          .catch(() => {});
-      };
-      document.addEventListener("touchstart", onFirstTouch, { once: true });
+      // iOS 13+: show an explicit button — document-level touchstart listeners
+      // are not accepted as trusted gestures by iOS Safari for this API.
+      setShowGyroBtn(true);
     } else if (typeof DeviceOrientationEvent !== "undefined") {
       // Android / desktop with gyro — no prompt needed
       registerGyro();
@@ -126,15 +120,35 @@ export default function AjvarIllustration({ svgContent }: Props) {
     };
   }, []);
 
+  const handleGyroRequest = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (DeviceOrientationEvent as any)
+      .requestPermission()
+      .then((state: string) => { if (state === "granted") registerGyroRef.current(); })
+      .catch(() => {});
+    setShowGyroBtn(false);
+  };
+
   return (
-    <div
-      ref={containerRef}
-      className="absolute inset-x-[15%] inset-y-[-5%] z-10 pointer-events-none"
-      style={{
-        filter: "blur(28px)",
-        transition: "filter 1.6s ease-out",
-      }}
-      dangerouslySetInnerHTML={{ __html: svgContent }}
-    />
+    <>
+      <div
+        ref={containerRef}
+        className="absolute inset-x-[15%] inset-y-[-5%] z-10 pointer-events-none"
+        style={{
+          filter: "blur(28px)",
+          transition: "filter 1.6s ease-out",
+        }}
+        dangerouslySetInnerHTML={{ __html: svgContent }}
+      />
+      {showGyroBtn && (
+        <button
+          onClick={handleGyroRequest}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-2 rounded-full border-2 border-white text-white uppercase text-sm tracking-wide"
+          style={{ fontFamily: "var(--font-labil)" }}
+        >
+          Enable tilt
+        </button>
+      )}
+    </>
   );
 }
