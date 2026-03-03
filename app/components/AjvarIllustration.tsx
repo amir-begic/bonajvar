@@ -97,8 +97,8 @@ export default function AjvarIllustration({ svgContent }: Props) {
       if (e.gamma === null || e.beta === null) return;
       if (betaRef === null) betaRef = e.beta;
       lastMouseMove = Date.now(); // suppress idle drift
-      targetX = Math.max(-1, Math.min(1, e.gamma / 2));
-      targetY = Math.max(-1, Math.min(1, (e.beta - betaRef) / 2));
+      targetX = Math.max(-2, Math.min(2, e.gamma / 2));
+      targetY = Math.max(-2, Math.min(2, (e.beta - betaRef) / 2));
     };
 
     const registerGyro = () => {
@@ -140,7 +140,7 @@ export default function AjvarIllustration({ svgContent }: Props) {
     <>
       <div
         ref={containerRef}
-        className="absolute inset-x-[15%] inset-y-[-5%] z-10 pointer-events-none"
+        className="absolute inset-x-0 inset-y-[-15%] md:inset-x-[15%] md:inset-y-[-5%] z-10 pointer-events-none"
         style={{
           filter: "blur(28px)",
           transition: "filter 1.6s ease-out",
