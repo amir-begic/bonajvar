@@ -97,8 +97,8 @@ export default function AjvarIllustration({ svgContent }: Props) {
       if (e.gamma === null || e.beta === null) return;
       if (betaRef === null) betaRef = e.beta;
       lastMouseMove = Date.now(); // suppress idle drift
-      targetX = Math.max(-1, Math.min(1, e.gamma / 30));
-      targetY = Math.max(-1, Math.min(1, (e.beta - betaRef) / 30));
+      targetX = Math.max(-1, Math.min(1, e.gamma / 10));
+      targetY = Math.max(-1, Math.min(1, (e.beta - betaRef) / 10));
     };
 
     const registerGyro = () => {
