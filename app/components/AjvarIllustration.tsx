@@ -80,11 +80,11 @@ export default function AjvarIllustration({ svgContent }: Props) {
       // Use setAttribute — CSS style.transform on SVG <g> elements is
       // unreliable on iOS Safari. SVG transform attributes work universally.
       if (bodyLayer)
-        bodyLayer.setAttribute("transform", `translate(${currentX * 6} ${currentY * 5})`);
+        bodyLayer.setAttribute("transform", `translate(${currentX * 14} ${currentY * 15})`);
       if (mediumLayer)
-        mediumLayer.setAttribute("transform", `translate(${currentX * 14} ${currentY * 11})`);
+        mediumLayer.setAttribute("transform", `translate(${currentX * 25} ${currentY * 21})`);
       if (seedsLayer)
-        seedsLayer.setAttribute("transform", `translate(${currentX * 24} ${currentY * 18})`);
+        seedsLayer.setAttribute("transform", `translate(${currentX * 35} ${currentY * 30})`);
 
       raf = requestAnimationFrame(tick);
     };
