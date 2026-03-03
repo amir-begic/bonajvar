@@ -1,65 +1,119 @@
-import Image from "next/image";
+import { readFileSync } from "fs";
+import { join } from "path";
+import AjvarIllustration from "./components/AjvarIllustration";
+import DunneStars from "./components/DunneStars";
+import NavPill from "./components/NavPill";
 
 export default function Home() {
+  const svgContent = readFileSync(
+    join(process.cwd(), "public/assets/ajvar-grouped.svg"),
+    "utf-8"
+  );
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main
+      className="relative w-full overflow-hidden"
+      style={{ height: "100svh", backgroundColor: "#505fde" }}
+    >
+      {/* ── Nav pills – top left ── */}
+      <nav className="absolute left-1.25 top-1.25 flex gap-2 z-20">
+        <NavPill label="Contact" href="/contact" animationDelay="0s" />
+        <NavPill label="T-Shirt" href="/merch" animationDelay="0.08s" />
+      </nav>
+
+      {/* ── 100% Dunne badge – desktop: top right ── */}
+      <div
+        className="reveal-up hidden md:block absolute right-4 top-1.5 z-20"
+        style={{ animationDelay: "0.12s" }}
+      >
+        <BadgeContent />
+      </div>
+
+      {/* ── Giant title – pushed lower on mobile ── */}
+      <div
+        className="absolute inset-x-0 top-0 text-center uppercase leading-none select-none pointer-events-none z-30 pt-32 md:pt-[3vh]"
+        style={{
+          fontFamily: "var(--font-atilla)",
+          fontSize: "clamp(100px, 22vw, 320px)",
+          lineHeight: 0.88,
+          color: "#111",
+        }}
+      >
+        <span className="reveal-down block" style={{ animationDelay: "0.5s" }}>
+          BON
+        </span>
+        <span className="reveal-down block" style={{ animationDelay: "0.68s" }}>
+          AJVAR
+        </span>
+      </div>
+
+      {/* ── 100% Dunne badge – mobile: below title ── */}
+      <div
+        className="reveal-up md:hidden absolute left-1/2 -translate-x-1/2 bottom-24 z-20"
+        style={{ animationDelay: "0.12s" }}
+      >
+        <BadgeContent />
+      </div>
+
+      {/* ── Paprika SVG with mouse parallax + idle drift (z-10, behind title) ── */}
+      <AjvarIllustration svgContent={svgContent} />
+
+      {/* ── Bottom-left variant copy – hidden on mobile ── */}
+      <div
+        className="reveal-up hidden md:block absolute left-34.75 bottom-[10%] z-20"
+        style={{ fontFamily: "var(--font-labil)", animationDelay: "0.15s" }}
+      >
+        <div className="relative p-3 w-77.25">
+          <span className="absolute top-0 left-0 text-white text-[20px] leading-none">+</span>
+          <span className="absolute top-0 right-0 text-white text-[20px] leading-none">+</span>
+          <span className="absolute bottom-0 left-0 text-white text-[20px] leading-none">+</span>
+          <span className="absolute bottom-0 right-0 text-white text-[20px] leading-none">+</span>
+          <p className="text-white uppercase text-[42px] leading-10 text-center">
+            Natural
+            <br />
+            pasteurized
+            <br />
+            roasted
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* ── Bottom-right variant copy – hidden on mobile ── */}
+      <div
+        className="reveal-up hidden md:block absolute right-34.75 bottom-[10%] z-20"
+        style={{ fontFamily: "var(--font-labil)", animationDelay: "0.22s" }}
+      >
+        <div className="relative p-3 w-77.25">
+          <span className="absolute top-0 left-0 text-white text-[20px] leading-none">+</span>
+          <span className="absolute top-0 right-0 text-white text-[20px] leading-none">+</span>
+          <span className="absolute bottom-0 left-0 text-white text-[20px] leading-none">+</span>
+          <span className="absolute bottom-0 right-0 text-white text-[20px] leading-none">+</span>
+          <p className="text-white uppercase text-[42px] leading-10 text-center">
+            Hot
+            <br />
+            original
+            <br />
+            spicy
+          </p>
         </div>
-      </main>
+      </div>
+    </main>
+  );
+}
+
+/** Shared badge markup — used in both desktop and mobile positions */
+function BadgeContent() {
+  return (
+    <div className="relative" style={{ width: 150, height: 150 }}>
+      <DunneStars />
+      <span
+        className="absolute inset-0 flex flex-col items-center justify-center text-center text-white uppercase text-[22px] leading-5"
+        style={{ fontFamily: "var(--font-labil)" }}
+      >
+        100%
+        <br />
+        Dunne
+      </span>
     </div>
   );
 }

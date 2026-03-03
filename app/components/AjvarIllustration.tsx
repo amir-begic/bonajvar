@@ -1,0 +1,103 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+
+interface Props {
+  svgContent: string;
+}
+
+export default function AjvarIllustration({ svgContent }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const bodyLayer = container.querySelector<SVGGElement>("#layer-body");
+    const mediumLayer = container.querySelector<SVGGElement>("#layer-medium");
+    const seedsLayer = container.querySelector<SVGGElement>("#layer-seeds");
+
+    const svg = container.querySelector("svg");
+    if (svg) {
+      svg.style.width = "100%";
+      svg.style.height = "100%";
+    }
+
+    // ── Blur clear ──────────────────────────────────────────────────
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduced) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          container.style.filter = "blur(0px)";
+        });
+      });
+    }
+
+    // ── Mouse parallax + idle drift ─────────────────────────────────
+    // lastMouseMove = 0 means "never moved" → idle animation starts immediately.
+    // Moving the mouse resets it; after 2 s of no movement it drifts again.
+    let lastMouseMove = 0;
+    let targetX = 0, targetY = 0;
+    let currentX = 0, currentY = 0;
+    let raf: number;
+
+    const onMouseMove = (e: MouseEvent) => {
+      lastMouseMove = Date.now();
+      targetX = (e.clientX / window.innerWidth - 0.5) * 2;
+      targetY = (e.clientY / window.innerHeight - 0.5) * 2;
+    };
+
+    const onMouseLeave = () => {
+      lastMouseMove = 0;
+    };
+
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+    const tick = () => {
+      const t = performance.now() / 1000;
+      const isIdle = Date.now() - lastMouseMove > 800;
+
+      if (isIdle) {
+        // Slow figure-8 drift when no mouse input (always active on mobile)
+        targetX = Math.sin(t * 0.35) * 2.0;
+        targetY = Math.cos(t * 0.25) * 1.5;
+      }
+
+      // Slower lerp during idle → dreamier feel
+      const speed = isIdle ? 0.022 : 0.07;
+      currentX = lerp(currentX, targetX, speed);
+      currentY = lerp(currentY, targetY, speed);
+
+      if (bodyLayer)
+        bodyLayer.style.transform = `translate(${currentX * 6}px, ${currentY * 5}px)`;
+      if (mediumLayer)
+        mediumLayer.style.transform = `translate(${currentX * 14}px, ${currentY * 11}px)`;
+      if (seedsLayer)
+        seedsLayer.style.transform = `translate(${currentX * 24}px, ${currentY * 18}px)`;
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    document.documentElement.addEventListener("mouseleave", onMouseLeave);
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      document.documentElement.removeEventListener("mouseleave", onMouseLeave);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute inset-x-[15%] inset-y-[-5%] z-10 pointer-events-none"
+      style={{
+        filter: "blur(28px)",
+        transition: "filter 1.6s ease-out",
+      }}
+      dangerouslySetInnerHTML={{ __html: svgContent }}
+    />
+  );
+}
