@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import AjvarIllustration from "./components/AjvarIllustration";
-import DunneStars from "./components/DunneStars";
+import DunneBadge from "./components/DunneBadge";
 import NavPill from "./components/NavPill";
 
 export default function Home() {
@@ -26,7 +26,7 @@ export default function Home() {
         className="reveal-up hidden md:block absolute right-4 top-1.5 z-20"
         style={{ animationDelay: "0.12s" }}
       >
-        <BadgeContent />
+        <DunneBadge />
       </div>
 
       {/* ── Giant title – pushed lower on mobile ── */}
@@ -52,7 +52,7 @@ export default function Home() {
         className="reveal-up md:hidden absolute left-1/2 -translate-x-1/2 bottom-24 z-20"
         style={{ animationDelay: "0.12s" }}
       >
-        <BadgeContent />
+        <DunneBadge />
       </div>
 
       {/* ── Paprika SVG with mouse parallax + idle drift (z-10, behind title) ── */}
@@ -98,22 +98,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-  );
-}
-
-/** Shared badge markup — used in both desktop and mobile positions */
-function BadgeContent() {
-  return (
-    <div className="relative" style={{ width: 150, height: 150 }}>
-      <DunneStars />
-      <span
-        className="absolute inset-0 flex flex-col items-center justify-center text-center text-white uppercase text-[22px] leading-5"
-        style={{ fontFamily: "var(--font-labil)" }}
-      >
-        100%
-        <br />
-        Dunne
-      </span>
-    </div>
   );
 }

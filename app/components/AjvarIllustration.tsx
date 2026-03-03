@@ -78,6 +78,42 @@ export default function AjvarIllustration({ svgContent }: Props) {
       raf = requestAnimationFrame(tick);
     };
 
+    // ── Gyroscope parallax (mobile) ─────────────────────────────────
+    // beta/gamma → targetX/Y, suppressing idle drift while active.
+    // betaRef calibrates the neutral hold angle on first reading.
+    let betaRef: number | null = null;
+
+    const onOrientation = (e: DeviceOrientationEvent) => {
+      if (e.gamma === null || e.beta === null) return;
+      if (betaRef === null) betaRef = e.beta;
+      lastMouseMove = Date.now(); // suppress idle drift
+      targetX = Math.max(-1, Math.min(1, e.gamma / 30));
+      targetY = Math.max(-1, Math.min(1, (e.beta - betaRef) / 30));
+    };
+
+    const registerGyro = () => {
+      window.addEventListener("deviceorientation", onOrientation);
+    };
+
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      typeof (DeviceOrientationEvent as any).requestPermission === "function"
+    ) {
+      // iOS 13+ — request inside a user gesture (first touch)
+      const onFirstTouch = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (DeviceOrientationEvent as any)
+          .requestPermission()
+          .then((state: string) => { if (state === "granted") registerGyro(); })
+          .catch(() => {});
+      };
+      document.addEventListener("touchstart", onFirstTouch, { once: true });
+    } else if (typeof DeviceOrientationEvent !== "undefined") {
+      // Android / desktop with gyro — no prompt needed
+      registerGyro();
+    }
+
     window.addEventListener("mousemove", onMouseMove);
     document.documentElement.addEventListener("mouseleave", onMouseLeave);
     raf = requestAnimationFrame(tick);
@@ -85,6 +121,7 @@ export default function AjvarIllustration({ svgContent }: Props) {
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
       document.documentElement.removeEventListener("mouseleave", onMouseLeave);
+      window.removeEventListener("deviceorientation", onOrientation);
       cancelAnimationFrame(raf);
     };
   }, []);
