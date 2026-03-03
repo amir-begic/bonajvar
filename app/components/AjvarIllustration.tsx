@@ -8,7 +8,14 @@ interface Props {
 
 export default function AjvarIllustration({ svgContent }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [showGyroBtn, setShowGyroBtn] = useState(false);
+  const [showGyroBtn, setShowGyroBtn] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      typeof (DeviceOrientationEvent as any).requestPermission === "function"
+    );
+  });
   const registerGyroRef = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -21,6 +28,10 @@ export default function AjvarIllustration({ svgContent }: Props) {
 
     const svg = container.querySelector("svg");
     if (svg) {
+      // setAttribute overrides the SVG width/height attributes — iOS Safari
+      // ignores style.width/height when explicit attributes are present.
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", "100%");
       svg.style.width = "100%";
       svg.style.height = "100%";
     }
@@ -66,12 +77,14 @@ export default function AjvarIllustration({ svgContent }: Props) {
       currentX = lerp(currentX, targetX, speed);
       currentY = lerp(currentY, targetY, speed);
 
+      // Use setAttribute — CSS style.transform on SVG <g> elements is
+      // unreliable on iOS Safari. SVG transform attributes work universally.
       if (bodyLayer)
-        bodyLayer.style.transform = `translate(${currentX * 6}px, ${currentY * 5}px)`;
+        bodyLayer.setAttribute("transform", `translate(${currentX * 6} ${currentY * 5})`);
       if (mediumLayer)
-        mediumLayer.style.transform = `translate(${currentX * 14}px, ${currentY * 11}px)`;
+        mediumLayer.setAttribute("transform", `translate(${currentX * 14} ${currentY * 11})`);
       if (seedsLayer)
-        seedsLayer.style.transform = `translate(${currentX * 24}px, ${currentY * 18}px)`;
+        seedsLayer.setAttribute("transform", `translate(${currentX * 24} ${currentY * 18})`);
 
       raf = requestAnimationFrame(tick);
     };
@@ -95,14 +108,8 @@ export default function AjvarIllustration({ svgContent }: Props) {
     // Expose registerGyro so the button click handler (outside useEffect) can call it
     registerGyroRef.current = registerGyro;
 
-    if (
-      typeof DeviceOrientationEvent !== "undefined" &&
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      typeof (DeviceOrientationEvent as any).requestPermission === "function"
-    ) {
-      // iOS 13+: show an explicit button — document-level touchstart listeners
-      // are not accepted as trusted gestures by iOS Safari for this API.
-      setShowGyroBtn(true);
+    if (showGyroBtn) {
+      // iOS 13+: button is shown; gyro will be registered when user taps it.
     } else if (typeof DeviceOrientationEvent !== "undefined") {
       // Android / desktop with gyro — no prompt needed
       registerGyro();
@@ -118,7 +125,7 @@ export default function AjvarIllustration({ svgContent }: Props) {
       window.removeEventListener("deviceorientation", onOrientation);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [showGyroBtn]);
 
   const handleGyroRequest = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
