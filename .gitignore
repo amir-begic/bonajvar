@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# licensed fonts – add locally to public/fonts/, never commit
+/public/fonts/*.otf
+/public/fonts/*.ttf
+/public/fonts/*.woff
+/public/fonts/*.woff2

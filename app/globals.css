@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
+/* ── Local fonts (silently absent on Vercel until purchased) ──── */
+@font-face {
+  font-family: "AttilaSansSharp";
+  src: url("/fonts/AttilaSansSharp-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "LabilGrotesk";
+  src: url("/fonts/LabilGrotesk-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --blue: #505fde;
   --near-black: #1d1d1b;
+  --font-atilla: "AttilaSansSharp", Impact, "Arial Black", sans-serif;
+  --font-labil: "LabilGrotesk", "Arial Black", "Helvetica Neue", sans-serif;
 }
 
 body {
